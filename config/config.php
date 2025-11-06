@@ -17,26 +17,24 @@ $CONFIG = array (
       'writable' => true,
     ),
   ),
-  'memcache.distributed' => '\\OC\\Memcache\\Redis',
-  'memcache.locking' => '\\OC\\Memcache\\Redis',
-  'redis' => 
-  array (
-    'host' => 'redis',
-    'password' => 'RedisCache2025!',
-    'port' => 6379,
-  ),
-  'overwriteprotocol' => 'http',
   'upgrade.disable-web' => true,
-  'instanceid' => 'oc7byukn67w4',
-  'passwordsalt' => 'q+01YnuLoQmyru3QmHZZyMgOq8P3IO',
-  'secret' => 'wMxXuxAoRQc+2A+XR076MfqObH/EYkRkOTIKn7j89snn00Qp',
+  'instanceid' => 'ocui6m2uwmqq',
+  'passwordsalt' => 'zljZ5E/BYlyPgy5nSRXgBL/9k6edw+',
+  'secret' => 'sjo0iqXFgb29EfA1ukjS+RFE8rPNCvlzlQ4J5rySYQ4NjOto',
   'trusted_domains' => 
   array (
     0 => 'localhost:8080',
   ),
   'datadirectory' => '/var/www/html/data',
-  'dbtype' => 'sqlite3',
+  'dbtype' => 'mysql',
   'version' => '27.1.5.1',
   'overwrite.cli.url' => 'http://localhost:8080',
+  'dbname' => 'nextcloud',
+  'dbhost' => 'db',
+  'dbport' => '',
+  'dbtableprefix' => 'oc_',
+  'mysql.utf8mb4' => true,
+  'dbuser' => 'nextcloud',
+  'dbpassword' => 'YourSecurePassword',
   'installed' => true,
 );

@@ -3,100 +3,34 @@ services:
     image: mariadb:10.11
     container_name: nextcloud-db
     restart: unless-stopped
-    command: >
-      --transaction-isolation=READ-COMMITTED
-      --log-bin=binlog --binlog-format=ROW
-      --innodb-file-per-table=1
-      --skip-innodb-read-only-compressed
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     volumes:
       - db:/var/lib/mysql
-      - db-backup:/backup
     environment:
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PW}
+      - MYSQL_PASSWORD=${MYSQL_PW}
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
-      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
-    secrets:
-      - db_root_password
-      - db_password
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$(cat /run/secrets/db_root_password)"]
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    networks:
-      - internal
-
-  redis:
-    image: redis:alpine
-    container_name: nextcloud-redis
-    restart: unless-stopped
-    command: >
-      sh -c 'exec redis-server --save 60 1 --requirepass "$$(cat /run/secrets/redis_password)" --appendonly yes'
-    volumes:
-      - redis:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    networks:
-      - internal
 
   app:
     image: nextcloud:27.1.5-apache
     container_name: nextcloud
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     ports:
       - ${HTTP_PORT}:80
     volumes:
       - nextcloud:/var/www/html
-      - ./config:/var/www/html/config
       - ./data:/var/www/html/data
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      - ./config:/var/www/html/config
     environment:
       - MYSQL_HOST=db
+      - MYSQL_PASSWORD=${MYSQL_PW}
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
-      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
-      - REDIS_HOST=redis
-      - REDIS_HOST_PASSWORD_FILE=/run/secrets/redis_password
       - NEXTCLOUD_TRUSTED_DOMAINS=${TRUSTED_DOMAINS}
-      - PHP_MEMORY_LIMIT=512M
-      - PHP_UPLOAD_LIMIT=512M
-      - APACHE_DISABLE_REWRITE_IP=1
-      - OVERWRITEPROTOCOL=http
-    secrets:
-      - db_password
-      - redis_password
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/status.php"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    networks:
-      - internal
-
-networks:
-  internal:
-    driver: bridge
+    depends_on:
+      - db
 
 volumes:
-  db:
-  redis:
   nextcloud:
-  db-backup:
-
-secrets:
-  db_root_password:
-    file: ./.secrets/db_root_password.txt
-  db_password:
-    file: ./.secrets/db_password.txt
-  redis_password:
-    file: ./.secrets/redis_password.txt
+  db:
