@@ -12,6 +12,14 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
 
+  redis:
+    image: redis:alpine
+    container_name: nextcloud-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PW}
+    volumes:
+      - redis:/data
+
   app:
     image: nextcloud:27.1.5-apache
     container_name: nextcloud
@@ -27,10 +35,19 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PW}
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
+      - REDIS_HOST=redis
+      - REDIS_HOST_PASSWORD=${REDIS_PW}
       - NEXTCLOUD_TRUSTED_DOMAINS=${TRUSTED_DOMAINS}
+      - REDIS_HOST_PORT=6379
+      - REDIS_HOST_DB=0
+      - MEMCACHE_LOCAL=\OC\Memcache\Redis
+      - REDIS_HOST_TIMEOUT=0.0
+      - REDIS_CLIENT=phpredis
     depends_on:
       - db
+      - redis
 
 volumes:
   nextcloud:
   db:
+  redis:
